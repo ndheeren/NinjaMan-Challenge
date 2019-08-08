@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>NinjaMan</title>
+        <style type ="text/css">
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            .row {
+                line-height: 0;
+            }
+            .wall {
+                background-color: blue;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+            }
+            .sushi {
+                background-color: black;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-image: url('resources/sushi.png');
+                background-size: contain;
+            }
+            .onigiri {
+                background-color: black;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-image: url('resources/onigiri.png');
+                background-size: contain;
+            }
+            .blank {
+                background-color: black;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+            }
+            #ninjaman {
+                background-color: black;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-image: url('resources/ninja.gif');
+                background-size: contain;
+                position: absolute;
+                left: 40px;
+                top: 40px;
+            }
+            #bluey {
+                background-color: black;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-image: url('resources/bluey.gif');
+                background-size: contain;
+                position: absolute;
+                left: 40px;
+                top: 40px;
+            }
+            #pinky {
+                background-color: black;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-image: url('resources/pinky.gif');
+                background-size: contain;
+                position: absolute;
+                left: 40px;
+                top: 40px;
+            }
+            #pumpky {
+                background-color: black;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-image: url('resources/pumpky.gif');
+                background-size: contain;
+                position: absolute;
+                left: 40px;
+                top: 40px;
+            }
+            #red {
+                background-color: black;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-image: url('resources/red.gif');
+                background-size: contain;
+                position: absolute;
+                left: 40px;
+                top: 40px;
+            }
+            #scaredy {
+                background-color: black;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-image: url('resources/scaredy.png');
+                background-size: contain;
+                position: absolute;
+                left: 40px;
+                top: 40px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id='world'></div>
+        <div id='ninjaman'></div>
+        <div id='bluey'></div>
+        <div id='pinky'></div>
+        <div id='pumpky'></div>
+        <div id='red'></div>
+        <div id='scaredy'></div>
+        <p id='lives'></div>
+        <p id='score'></div>
+        <p id='sushiEaten'></div>
+        <p id='onigiriEaten' ></div>
+    </body>
+
+    <script type="text/javascript">
+        
+        // scoring: sushi = 10 points | onigiri = 5 pts
+
+        // grid is oriented with top-left corner being (0,0)
+        //going right increases x-axis | going down increases y-axis
+
+        var interval = 40; // standard width in pixels
+
+        var modules = []; // the collection of module types
+
+        var worldSizeX = 4; // in modules
+        var worldSizeY = 4; // in modules
+
+        var world = [ // 10x10
+            /*[0,0,1,1,1,0,0,0,0,0],
+            [0,0,1,0,1,0,0,0,0,0],
+            [1,0,1,0,1,0,0,0,0,0],
+            [2,0,1,0,0,0,0,0,0,0],
+            [2,2,0,0,3,0,0,0,0,0],
+            [2,0,0,0,3,0,0,0,0,0],
+            [0,0,1,0,0,0,0,0,0,0],
+            [0,0,1,0,0,0,0,0,0,0],
+            [0,0,1,0,0,0,0,0,0,0],
+            [0,0,1,0,0,0,0,0,0,0],*/
+
+            /*[0,0,0,0,1,1,2,0,0,0],
+            [0,0,0,0,1,1,2,0,0,0],
+            [0,0,0,0,1,1,2,0,0,0],
+            [0,0,0,0,1,1,2,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,3,0,0,0],
+            [0,0,0,0,0,0,3,0,0,0],
+            [0,0,0,0,1,1,3,0,0,0],
+            [0,0,0,0,1,1,3,0,0,0],*/
+
+            // can be improved to be more dynamic
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+
+        ];
+
+        var worldDict = {
+            0: 'blank',
+            1: 'wall',
+            2: 'sushi',
+            3: 'onigiri',
+        }
+
+        var alive = true;
+        var lives = 3;
+        var score = 0;
+        var sushiEaten = 0;
+        var onigiriEaten = 0;
+
+        var ninjaman = { // NM coords
+            x: 0,
+            //y: 9,
+            y: 0,
+        }
+
+        var ghosts = [];
+
+        var blueyGhost = {
+            name: "bluey",
+            x: 0,
+            y: 0,
+        }
+        var pinkyGhost = {
+            name: "pinky",
+            x: 0,
+            y: 0,
+        }
+        var pumpkyGhost = {
+            name: "pumpky",
+            x: 0,
+            y: 0,
+        }
+        var redGhost = {
+            name: "red",
+            x: 0,
+            y: 0,
+        }
+        var scaredyGhost = {
+            name: "scaredy",
+            x: 0,
+            y: 0,
+        }
+
+        var nodeGrid = [];
+
+        class Vector2 {
+
+        // ref: https://www.w3schools.com/js/js_classes.asp
+
+            constructor (_x,_y) {
+                this.x = _x;
+                this.y = _y;
+            }
+        }
+
+        /*testV2();
+        function testV2() {
+        v2 = new Vector2(0,1);
+        console.log("x = " + v2.x + " | y = " + v2.y);
+        }*/
+
+        class Node {
+            constructor(_coords, _traversable) {
+                this.gCost = 0;
+                this.hCost = 0;
+                //this.coords = _coords;
+                this.coords = new Vector2(_coords.x, _coords.y);
+                this.traversable = _traversable;
+                this.neighbors = [];
+                this.parent = null;
+            }
+
+            get fCost() // property
+            {
+                return this.gCost + this.hCost;
+            }
+        }
+
+        /*function testNode() {
+        var v2 = new Vector2(0,1);
+        var fooNode = new Node(v2,false);
+        //console.log("v2.x = " + v2.x);
+        //fooNode.x = v2.x;
+        //console.log("fooNode.x = " + fooNode.x);
+        console.log("node's coords = (" + fooNode.coords.x + "," + fooNode.coords.y + ") | traversable: " + fooNode.traversable);
+        fooNode.gCost = 30;
+        fooNode.hCost = 60;
+        console.log("node's fCost = " + fooNode.fCost);
+        }
+        testNode();*/
+
+
+        establishModules();
+        procedurallyGenerateWorld();
+        spawnGhosts();
+
+        drawStats();
+        drawNinjaman();
+        drawGhosts();
+        drawWorld();
+
+        initializeNodeGrid();
+        setInterval(() => { // ref: https://www.w3schools.com/jsref/met_win_setinterval.asp
+            if (alive) {
+                haveGhostsAttemptToMove();
+            }
+        }, 1000);
+
+
+        document.onkeydown = function(e) {
+            
+            var movementSuccessful = false;
+            
+            if (e.keyCode == 38 || e.keyCode == 87) { // up
+                movementSuccessful = attemptToMove('up');
+            }
+            if (e.keyCode == 40 || e.keyCode == 83) { // down
+                movementSuccessful = attemptToMove('down');
+            }
+            if (e.keyCode == 37 || e.keyCode == 65) { // left
+                movementSuccessful = attemptToMove('left');
+            }
+            if (e.keyCode == 39 || e.keyCode == 68) { // right
+                movementSuccessful = attemptToMove('right');
+            }
+
+            if (movementSuccessful) {
+
+                console.log("Ninjaman's coords: " + ninjaman.x + ", " + ninjaman.y);
+
+                if (world[ninjaman.y][ninjaman.x] == 2) { // if moving into a sushi square
+                    sushiEaten += 1;
+                    score += 10;
+                    //console.log('sushiEaten = ' + sushiEaten);
+                }
+                else if (world[ninjaman.y][ninjaman.x] == 3) { // if moving into an onigiri square
+                    onigiriEaten += 1;
+                    score += 5;
+                    //console.log('onigiriEaten = ' + onigiriEaten);
+                }
+
+                world[ninjaman.y][ninjaman.x] = 0; // updates whatever NM has moved into a blank space
+
+                checkForGhostContactWithNinjaman();
+
+                drawStats();
+                drawNinjaman();
+                drawWorld();
+            }
+        }
+
+        function drawWorld() {
+            output = "";
+
+            // attempting to make this use regular coordinate system where going up increases y-axis
+            for (var row = world.length - 1; row >= 0; row--) {
+                output += "<div class = 'row'>";
+                for (var x = 0; x < world[row].length; x++) {
+                    output += "<div class = '" + worldDict[world[row][x]] + "'></div>";
+                }
+                output += "</div>";
+            }
+
+            /*for (var row = 0; row < world.length; row++) {
+                output += "<div class = 'row'>";
+                for (var x = 0; x < world[row].length; x++) {
+                    output += "<div class = '" + worldDict[world[row][x]] + "'></div>";
+                }
+                output += "</div>";
+            }*/
+
+            document.getElementById('world').innerHTML = output;
+        }
+
+        function drawNinjaman() {
+            
+            //document.getElementById('ninjaman').style.top = ninjaman.y * interval + 'px';
+            document.getElementById('ninjaman').style.top = (((worldSizeY * 5) - 1) - ninjaman.y) * interval + 'px';
+            document.getElementById('ninjaman').style.left = ninjaman.x * interval + 'px';
+
+            //console.log("Ninjaman's style.top = " + document.getElementById('ninjaman').style.top); // for debugging
+        }
+
+        function drawStats() {
+            document.getElementById("lives").innerHTML = "Lives: " + lives;
+            document.getElementById("score").innerHTML = "Score: " + score;
+            document.getElementById("sushiEaten").innerHTML = "Sushi: " + sushiEaten;
+            document.getElementById("onigiriEaten").innerHTML = "Onigiri: " + onigiriEaten;
+        }
+
+        function attemptToMove(direction) {
+            
+            // this commented-out up and down portion is to be used when going up DECREASES the y-axis
+            /*if (direction == 'up') {
+                if (world[ninjaman.y - 1][ninjaman.x] != 1) {
+                    ninjaman.y--;
+                    return true;
+                }
+            }
+            else if (direction == 'down') {
+                if (world[ninjaman.y + 1][ninjaman.x] != 1) {
+                    ninjaman.y++;
+                    return true;
+                }
+            }*/
+
+            // this up and down portion is to be used when going up INCREASES the y-axis
+            if (direction == 'up') {
+                if (world[ninjaman.y + 1][ninjaman.x] != 1) {
+                    ninjaman.y++;
+                    return true;
+                }
+            }
+            else if (direction == 'down') {
+                if (world[ninjaman.y - 1][ninjaman.x] != 1) {
+                    ninjaman.y--;
+                    return true;
+                }
+            }
+
+            else if (direction == 'left') {
+                if (world[ninjaman.y][ninjaman.x - 1] != 1 && ninjaman.x - 1 >= 0) {
+                    ninjaman.x--;
+                    return true;
+                }
+            }
+            else if (direction == 'right') {
+                if (world[ninjaman.y][ninjaman.x + 1] != 1 && ninjaman.x + 1 < world[ninjaman.y].length) {
+                    ninjaman.x++;
+                    return true;
+                }
+            }
+            else {
+                return false;
+            }
+        }
+
+        function checkForGhostContactWithNinjaman() {
+            ghosts.forEach(ghost => {
+                if (ghost.x == ninjaman.x && ghost.y == ninjaman.y) {
+                    accountForContact();
+                }
+            });
+
+            return false;
+        }
+
+        function accountForContact() {
+            lives--;
+            drawStats();
+            
+            if (lives <= 0) { // trigger game over
+                alive = false;
+                alert("Game over!");
+            }
+            else {
+                ninjaman.x = 0;
+                ninjaman.y = 0;
+                drawNinjaman();
+                drawWorld();
+            }
+        }
+
+        function drawGhosts() {
+            
+            //document.getElementById("bluey").style.top = (((worldSizeY * 5) - 1) - blueyGhost.y) * interval + 'px';
+            //document.getElementById("bluey").style.left = blueyGhost.x * interval + 'px';
+            
+            for (var i = 0; i < ghosts.length; i++) {
+                document.getElementById(ghosts[i].name).style.top = (((worldSizeY * 5) - 1) - ghosts[i].y) * interval + 'px';
+                document.getElementById(ghosts[i].name).style.left = ghosts[i].x * interval + 'px';
+            }
+        }
+
+        function spawnGhosts() {
+            
+            ghosts.push(blueyGhost, pinkyGhost, pumpkyGhost, redGhost, scaredyGhost);
+            
+            for (var i = 0; i < ghosts.length; i++) {
+                var spawned = false;
+                var infiniteLoopPreventer = 0;
+
+                while (!spawned) {
+
+                    var randomX = Math.floor((Math.random() * (worldSizeX * 5)));
+                    var randomY = Math.floor((Math.random() * (worldSizeY * 5)));
+
+                    if (randomX > 4 && randomY > 4 && world[randomY][randomX] != 1) {
+                        // set the ghost's coords
+                        ghosts[i].x = randomX; 
+                        ghosts[i].y = randomY;
+                        spawned = true;
+                    }
+                    else {
+                        infiniteLoopPreventer++;
+                        if (infiniteLoopPreventer > 1000) {
+                            console.log("ILP in spawnGhosts was triggered.");
+                            break;
+                        }
+                    }
+                }
+                
+            }
+        }
+
+        function haveGhostsAttemptToMove() {
+            
+            ghosts.forEach(ghost => {
+                
+                if (alive) { // this check is not redundant -- ninjaman might contact a ghost between ghost movements
+                    var ghostCoords = new Vector2(ghost.x, ghost.y);
+                    var ninjamanCoords = new Vector2(ninjaman.x, ninjaman.y);
+                    var coordsPath = findPath(ghostCoords, ninjamanCoords);
+                    //console.log("ghost.coords = (" + ghost.x + "," + ghost.y + ") | coordsPath.length = " + coordsPath.length); // debugging
+
+                    if (coordsPath.length > 0) {
+
+                        var canMove = true;
+                        
+                        // prevents ghosts stacking on one another
+                        ghosts.forEach(otherGhost => {
+                            if (otherGhost != ghost) {
+                                if (otherGhost.x == coordsPath[0].x && otherGhost.y == coordsPath[0].y) { // if the other ghost is where this ghost is just about to move to
+                                    canMove = false;
+                                }
+                            }
+                        });
+
+                        if (canMove) {
+                            // note that the pathfinding is inefficient in that it does not consider whether the player has moved at all or not since the last interval
+                            ghost.x = coordsPath[0].x;
+                            ghost.y = coordsPath[0].y;
+
+                            checkForGhostContactWithNinjaman();
+                        }
+                    }
+                }
+            });
+
+            drawGhosts();
+            drawWorld();
+        }
+
+        // ##### PATHFINDING ###########################################################################################
+        
+        // using A* pathfinding
+
+        function initializeNodeGrid() {
+            
+            // initialize node grid -- iterate thru world array, creating a corresponding node for each 'grid square' in the world
+            
+            for (var y = 0; y < worldSizeY * 5; y++) {
+                nodeGrid.push([]); // adds new row to node grid
+                for (var x = 0; x < worldSizeX * 5; x++) {
+                    var traversable = false;
+                    if (world[y][x] != 1) {
+                        traversable = true;
+                    }
+                    var currentNode = new Node(new Vector2(x,y), traversable);
+                    //console.log("currentNode.x = " + currentNode.coords.x + "| currentNode.y = " + currentNode.coords.y + "| currentNode.traversable = " + currentNode.traversable);
+                    nodeGrid[y].push(currentNode);
+                }
+            }
+
+            /*for (var i = 0; i < nodeGrid.length; i++) {
+                for (var j = 0; j < nodeGrid[i].length; j++) {
+                    var currentNode = nodeGrid[i][j];
+                    var coords = currentNode.coords;
+                    console.log("For current node: coords: (" + coords.x + "," + coords.y + ") | traversable: " + currentNode.traversable);
+                }
+            }*/
+
+            // set neighbor nodes for each node
+            for (var y = 0; y < nodeGrid.length; y++) {
+                for (var x = 0; x < nodeGrid[y].length; x++) {
+                    var currentNode = nodeGrid[y][x];
+                    var i = 1;
+                    while (i < 5)
+                    {
+                        var coordsModifier = new Vector2(0, 0);
+                        switch (i)
+                        {
+                            case 1: // N grid square
+                                coordsModifier = new Vector2(0, 1);
+                                break;
+                            case 2: // E gs
+                                coordsModifier = new Vector2(1, 0);
+                                break;
+                            case 3: // S gs
+                                coordsModifier = new Vector2(0, -1);
+                                break;
+                            case 4: // W gs
+                                coordsModifier = new Vector2(-1, 0);
+                                break;
+                        }
+
+                        var modifiedCoords = new Vector2(currentNode.coords.x + coordsModifier.x, currentNode.coords.y + coordsModifier.y);
+                        // ensure index is in range
+                        if (modifiedCoords.x >= 0 && modifiedCoords.y >= 0)
+                        {
+                            if (modifiedCoords.x < worldSizeX * 5 && modifiedCoords.y < worldSizeY * 5)
+                            {
+                                //currentNode.neighbors.push(nodeGrid[modifiedCoords.x, modifiedCoords.y]);
+                                currentNode.neighbors.push(nodeGrid[modifiedCoords.y][modifiedCoords.x]);
+                            }
+                        }
+                        i++;
+                    }
+                    //console.log("For GS (" + currentNode.coords.x + "," + currentNode.coords.y + "), it has " + currentNode.neighbors.length + " neighbors."); // debugging
+                }
+            }
+
+        }
+
+        function findPath(startingCoords, targetCoords)
+        {
+            // gCost is distance from starting node | hCost is distance from destination node | fCost is gCost + hCost
+            
+            var openNodes = [];
+            var closedNodes = [];
+            var startNode = nodeGrid[startingCoords.y][startingCoords.x]; // nota bene: the format for accessing the node grid must be 'nodeGrid[y][x]'
+            var targetNode = nodeGrid[targetCoords.y][targetCoords.x];
+
+            // I'm pretty sure that only the starting node's g & h costs need to be reset
+            //the rest of the nodes can potentially start with inaccurate g & h costs, but their g & h costs are set properly before they have to be accurate
+            startNode.gCost = 0;
+            startNode.hCost = 0;
+
+            openNodes.push(startNode);
+
+            var debugCounter = 0;
+            while (openNodes.length > 0)
+            {
+                debugCounter++;
+                if (debugCounter > 1000)
+                {
+                    console.log("Something went wrong with pathfinding here! This ran over 1,000 times w/out success!");
+                    break;
+                }
+
+                // find node in OPEN with lowest f cost
+                var lowestFCost = 1000000; // q&d (b/c semi-arbitrary)
+                var nodeWithLowestFCost = null;
+
+                openNodes.forEach(curNode => {
+                    if (curNode.fCost < lowestFCost)
+                    {
+                        nodeWithLowestFCost = curNode;
+                        lowestFCost = nodeWithLowestFCost.fCost;
+                    }
+                    else if (curNode.fCost == lowestFCost && curNode.hCost < nodeWithLowestFCost.hCost) // in case of tied f costs
+                    {
+                        nodeWithLowestFCost = curNode;
+                        lowestFCost = nodeWithLowestFCost.fCost;
+                    }
+                });
+
+                //console.log("nodeWithLowestFCost = " + nodeWithLowestFCost.coords.x + "," + nodeWithLowestFCost.coords.y);
+                var currentNode = nodeWithLowestFCost;
+                //console.log("currentNode = " + currentNode.coords.x + "," + currentNode.coords.y);
+
+                indexOfCN = openNodes.indexOf(currentNode); // finds the index
+                openNodes.splice(indexOfCN, 1); // removes the element
+                closedNodes.push(currentNode);
+
+                if (currentNode == targetNode)
+                {
+                    var nodePath = retracePath(startNode, targetNode); // nodePath is a collection of nodes
+                    var coordsPath = convertPathToCoords(nodePath);
+                    return coordsPath;
+                }
+
+                for (var i = 0; i < currentNode.neighbors.length; i++) { // couldn't use forEach function b/c I'm using 'continue'
+                    var neighbor = currentNode.neighbors[i];
+
+                    if (!neighbor.traversable || closedNodes.includes(neighbor)) // ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
+                    {
+                        continue; // just skip to next neighbor
+                    }
+                    else if (!openNodes.includes(neighbor) ||  (currentNode.gCost + 1) < neighbor.gCost) // q&d
+                    {
+                        neighbor.gCost = currentNode.gCost + 1; // q&d
+                        neighbor.hCost = getManhattanDistance(neighbor.coords, targetNode.coords);
+                        neighbor.parent = currentNode;
+                        if (!openNodes.includes(neighbor))
+                        {
+                            openNodes.push(neighbor);
+                        }
+                    }
+                }
+            }
+            console.log("Reached this point.");
+        }
+
+        function retracePath(startNode, endNode) // takes two node params | returns a collection of nodes
+        {
+            var path = []; // path is a collection of nodes
+            var currentNode = endNode;
+
+            while (currentNode != startNode)
+            {
+                path.push(currentNode);
+                currentNode = currentNode.parent;
+            }
+            path.reverse();
+            return path;
+        }
+
+        function convertPathToCoords(path) // the param it takes is a collection of nodes | returns a collection of vector2s
+        {
+            coordsPath = []; // a collection of vector2s
+
+            path.forEach(currentNode => {
+                coordsPath.push(new Vector2(currentNode.coords.x, currentNode.coords.y));
+            });
+            return coordsPath;
+        }
+
+        // utility function
+        function getManhattanDistance(firstPoint, secondPoint) // expects two vector2s
+        {
+            var mDistance = Math.abs(firstPoint.x - secondPoint.x) + Math.abs(firstPoint.y - secondPoint.y);
+            return mDistance;
+        }
+
+        // ##### WORLD GENERATION ###########################################################################################
+
+        function procedurallyGenerateSection(xPos, yPos) {
+
+            //var section = "";
+
+            var randomNumForModule = Math.floor((Math.random() * modules.length)); // generates a random number between 0 and the number of module types
+            console.log("Random number chosen for module for section " + xPos + "," + yPos + ": " + randomNumForModule);
+            //var wallIndexes = getWallIndexes(randomNumForModule);
+
+            // get indexes of section
+            var offsetX = xPos * 5;
+            var offsetY = yPos * 5;
+
+            var moduleString = modules[randomNumForModule];
+            var moduleCharacter = "";
+            var moduleCharacterIndex = 0;
+
+            //var sectionIndexes = [];
+            for (var y = offsetY; y < offsetY + 5; y++) {
+                for (var x = offsetX; x < offsetX + 5; x++) {
+                    //sectionIndexes.push([x,y]);
+                    
+                    moduleCharacter = moduleString.charAt(moduleCharacterIndex);
+                    if (moduleCharacter == "X") {
+                        //section += 1; // for wall
+                        world[y][x] = 1;
+                    }
+                    else {
+                        //section += 0; // for blank square
+                        
+                        randomNumForFood = Math.floor((Math.random() * 21));
+                        if (randomNumForFood < 16) {
+                            world[y][x] = 0; // for blank square
+                        }
+                        else if (randomNumForFood < 20) {
+                            world[y][x] = 3; // for onigiri
+                        }
+                        else {
+                            world[y][x] = 2; // for sushi
+                        }
+                    }
+                    moduleCharacterIndex++;
+                }
+            }
+            
+            //console.log("sectionIndexes = " + sectionIndexes);
+
+            //console.log("section = " + section);
+            //return section;
+        }
+
+        function procedurallyGenerateWorld() {
+            
+            // this approach of generation is based on 5x5 modules
+            // for the modules to work, the world's length and width dimensions should be a multiple of 5 (adding 1 on each side if outer walls are used)
+
+            for (var y = 0; y < worldSizeY; y++) {
+                for (var x = 0; x < worldSizeX; x++) {
+                    procedurallyGenerateSection(x,y);
+                }
+            }
+
+            // todo maybe: generate walls for outer edges
+
+        }
+
+        function establishModules() {
+            // 0 is for empty square | X is for wall square
+
+            var moduleIndex = 0;
+
+            // empty module
+            var empty = 
+            '00000' +
+            '00000' +
+            '00000' +
+            '00000' +
+            '00000';
+            modules.push(empty);
+            console.log(modules[moduleIndex]);
+            moduleIndex++;
+
+            // block module
+            var block =
+            '00000' +
+            '0XXX0' +
+            '0XXX0' +
+            '0XXX0' +
+            '00000';
+            modules.push(block);
+            console.log(modules[moduleIndex]);
+            moduleIndex++;
+
+            // ecks module
+            var ecks =
+            '00000' +
+            '0X0X0' +
+            '00X00' +
+            '0X0X0' +
+            '00000';
+            modules.push(ecks);
+            console.log(modules[moduleIndex]);
+            moduleIndex++;
+
+            // plus module
+            var plus =
+            '00000' +
+            '00X00' +
+            '0XXX0' +
+            '00X00' +
+            '00000';
+            modules.push(plus);
+            console.log(modules[moduleIndex]);
+            moduleIndex++;
+
+            // tee module
+            var tee =
+            '00000' +
+            '0XXX0' +
+            '00X00' +
+            '00X00' +
+            '00000';
+            modules.push(tee);
+            console.log(modules[moduleIndex]);
+            moduleIndex++;
+
+            // eye module
+            var eye =
+            '00000' +
+            '0XXX0' +
+            '00X00' +
+            '0XXX0' +
+            '00000';
+            modules.push(eye);
+            console.log(modules[moduleIndex]);
+            moduleIndex++;
+
+            // four corners module
+            var fourCorners =
+            '00000' +
+            '0X0X0' +
+            '00000' +
+            '0X0X0' +
+            '00000';
+            modules.push(fourCorners);
+            console.log(modules[moduleIndex]);
+            moduleIndex++;
+
+            // h. mid-line module
+            var horizontalMidLine =
+            '00000' +
+            '00000' +
+            '0XXX0' +
+            '00000' +
+            '00000';
+            modules.push(horizontalMidLine);
+            console.log(modules[moduleIndex]);
+            moduleIndex++;
+
+            // v. mid-line module
+            var verticalMidLine =
+            '00000' +
+            '00X00' +
+            '00X00' +
+            '00X00' +
+            '00000';
+            modules.push(verticalMidLine);
+            console.log(modules[moduleIndex]);
+            moduleIndex++;
+
+            // h. lines module
+            var horizontalLines =
+            '00000' +
+            '0XXX0' +
+            '00000' +
+            '0XXX0' +
+            '00000';
+            modules.push(horizontalLines);
+            console.log(modules[moduleIndex]);
+            moduleIndex++;
+
+            // v. lines module
+            var verticalLines =
+            '00000' +
+            '0X0X0' +
+            '0X0X0' +
+            '0X0X0' +
+            '00000';
+            modules.push(verticalLines);
+            console.log(modules[moduleIndex]);
+            moduleIndex++;
+
+        }
+
+    </script>
+
+</html>
